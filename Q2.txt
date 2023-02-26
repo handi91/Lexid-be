@@ -1,0 +1,107 @@
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix dbo: <http://dbpedia.org/ontology/> 
+prefix dct: <http://purl.org/dc/terms/> 
+prefix owl: <http://www.w3.org/2002/07/owl#> 
+prefix wd: <https://www.wikidata.org/wiki/> 
+prefix lexid-s: <https://w3id.org/lex-id/schema/> 
+prefix lexid: <https://w3id.org/lex-id/data/> 
+
+##Question 2.1 : Apa saja dasar hukum dalam membuat <Legal Document>?
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasLegalBasis ?ans ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}
+--example "Apa saja dasar hukum dalam membuat Peraturan Daerah Kabupaten Batang Nomor 7 Tahun 2010?"
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasLegalBasis ?ans ;
+  rdfs:label "Peraturan Daerah Kabupaten Batang Nomor 7 Tahun 2010"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}
+
+##Question 2.2 : Apa saja peraturan yang berelasi dengan <Legal Document>?
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasLegalBasis
+  | lexid-s:implements
+  | lexid-s:amends
+  | lexid-s:repeals ?ans ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}
+--example "Apa saja peraturan yang berelasi dengan Peraturan Daerah Provinsi Maluku Nomor 12 Tahun 2008?"
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasLegalBasis
+  | lexid-s:implements
+  | lexid-s:amends
+  | lexid-s:repeals ?ans ;
+  rdfs:label "Peraturan Daerah Provinsi Maluku Nomor 12 Tahun 2008"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}
+
+##Question 2.3 : Peraturan manakah yang diubah oleh <Legal Document>?
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:amends ?ans ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}
+--example "Peraturan manakah yang diubah oleh Peraturan Menteri Perdagangan Republik Indonesia Nomor 46 Tahun 2009?"
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:amends ?ans ;
+  rdfs:label "Peraturan Menteri Perdagangan Republik Indonesia Nomor 46 Tahun 2009"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}
+
+##Question 2.4 : Peraturan manakah yang dicabut oleh <Legal Document>?
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:repeals ?ans ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}
+--example "Peraturan manakah yang dicabut oleh Peraturan Daerah Kabupaten Indragiri Hilir Nomor 44 Tahun 2010?"
+SELECT distinct (coalesce(?label , ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:repeals ?ans ;
+  rdfs:label "Peraturan Daerah Kabupaten Indragiri Hilir Nomor 44 Tahun 2010"^^xsd:string .
+  ?ans a lexid-s:LegalDocument .
+  OPTIONAL {
+  ?ans rdfs:label ?label .
+  }
+}

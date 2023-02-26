@@ -1,0 +1,27 @@
+#Question 1
+##Question 1.1 : Siapa yang menetapkan <Legal Document>?
+##Question 1.2 : Kapan <Legal Document> diundangkan?
+##Question 1.3 : Kapan <Legal Document> ditetapkan?
+##Question 1.4 : Apa pertimbangan dalam membuat <Legal Document>?
+
+#Question 2
+##Question 2.1 : Apa saja dasar hukum dalam membuat <Legal Document>?
+##Question 2.2 : Apa saja peraturan yang berelasi dengan <Legal Document>?
+##Question 2.3 : Peraturan manakah yang diubah oleh <Legal Document>?
+##Question 2.4 : Peraturan manakah yang dicabut oleh <Legal Document>?
+
+#Question 3
+##Question 3.1 : Apa saja Bab yang dibahas dalam <Legal Document>?
+##Question 3.2 : Berapa jumlah Pasal yang diatur dalam <Legal Document>?
+
+#Question 4
+##Question 4.1 : Bagaimana bunyi <Article> dalam <Legal Document>?
+##Question 4.2 : Bagaimana bunyi <Article> <Section> dalam <Legal Document>?
+
+#Question 5
+##Question 5.1 : Bagaimana perubahan bunyi <Article> <optional Section> dalam <Legal Document>?
+##Question 5.2 : Apa saja pasal yang dihapus dalam <legal Document>?
+##Question 5.3 : Apa saja pasal yang ditambahkan dalam <legal Document>?
+##Question 5.4 : Apakah <Legal Document> mengalami amandemen?
+##Question 5.5 : Apakah <Legal Document> masih berlaku?
+

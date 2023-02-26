@@ -1,0 +1,13 @@
+root,first,verb,q_type,legal_head,legal_rel
+siapa,siapa,menetapkan,1,menetapkan,obj
+diundangkan,kapan,diundangkan,2,diundangkan,nsubj:pass
+ditetapkan,kapan,ditetapkan,3,ditetapkan,nsubj:pass
+apa,apa,berelasi,6,berelasi,obl
+peraturan,peraturan,diubah,7,diubah,obl
+peraturan,peraturan,dicabut,8,dicabut,obl
+apa,apa,dibahas,9,dibahas,obl
+jumlah,berapa,diatur,10,diatur,obl
+apa,apa,dihapus,14,dihapus,obl
+apa,apa,ditambahkan,15,ditambahkan,obl
+mengalami,apakah,mengalami,16,mengalami,nsubj
+berlaku,apakah,berlaku,17,berlaku,nsubj

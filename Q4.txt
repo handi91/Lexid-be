@@ -1,0 +1,89 @@
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix dbo: <http://dbpedia.org/ontology/> 
+prefix dct: <http://purl.org/dc/terms/> 
+prefix owl: <http://www.w3.org/2002/07/owl#> 
+prefix wd: <https://www.wikidata.org/wiki/> 
+prefix lexid-s: <https://w3id.org/lex-id/schema/> 
+prefix lexid: <https://w3id.org/lex-id/data/> 
+
+##Question 4.1 : Bagaimana bunyi <Article> dalam <Legal Document>?
+SELECT distinct (concat(coalesce(?sectionName, ""), " ", ?ans) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?article .
+  ?article a lexid-s:Article ;
+  rdfs:label ?label .
+  FILTER regex(str(?label), "^<Article>(\\s|$|:)")
+  {
+    {
+      ?article lexid-s:hasPart ?section .
+      ?section a lexid-s:Section ;
+      lexid-s:name ?sectionName ;
+      dct:description ?ans .
+    }
+    UNION
+    {
+    	?article dct:description ?ans .
+    }
+  }
+}
+--example "Bagaimana bunyi Pasal 12 dalam Peraturan Daerah Provinsi Maluku Nomor 12 Tahun 2008?"
+SELECT distinct (concat(coalesce(?sectionName, ""), " ", ?ans) as ?answer) 
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "Peraturan Daerah Provinsi Maluku Nomor 12 Tahun 2008"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?article .
+  ?article a lexid-s:Article ;
+  rdfs:label ?label .
+  FILTER regex(str(?label), "^Pasal 12(\\s|$|:)")
+  {
+    {
+      ?article lexid-s:hasPart ?section .
+      ?section a lexid-s:Section ;
+      lexid-s:name ?sectionName ;
+      dct:description ?ans .
+    }
+    UNION
+    {
+    	?article dct:description ?ans .
+    }
+  }
+}
+
+##Question 4.2 : Bagaimana bunyi <Article> <Section> dalam <Legal Document>?
+SELECT distinct  ?answer
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?article .
+  ?article a lexid-s:Article ;
+  rdfs:label ?label .
+  FILTER regex(str(?label), "^<Article>(\\s|$|:)")
+  ?article lexid-s:hasPart ?section .
+  ?section a lexid-s:Section ;
+  rdfs:label ?sectionLabel ;
+  dct:description ?answer .
+  FILTER regex(str(?sectionLabel), "^<Section>(\\s|$|:)") 
+}
+--example "Bagaimana bunyi Pasal 3 ayat 2 dalam Peraturan Daerah Kabupaten Buton Nomor 44 Tahun 2011?"
+SELECT distinct  ?answer
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "Peraturan Daerah Kabupaten Buton Nomor 44 Tahun 2011"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?article .
+  ?article a lexid-s:Article ;
+  rdfs:label ?label .
+  FILTER regex(str(?label), "^Pasal 3(\\s|$|:)")
+  ?article lexid-s:hasPart ?section .
+  ?section a lexid-s:Section ;
+  rdfs:label ?sectionLabel ;
+  dct:description ?answer .
+  FILTER regex(str(?sectionLabel), "^ayat 2(\\s|$|:)") 
+}

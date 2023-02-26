@@ -1,0 +1,71 @@
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix dbo: <http://dbpedia.org/ontology/> 
+prefix dct: <http://purl.org/dc/terms/> 
+prefix owl: <http://www.w3.org/2002/07/owl#> 
+prefix wd: <https://www.wikidata.org/wiki/> 
+prefix lexid-s: <https://w3id.org/lex-id/schema/> 
+prefix lexid: <https://w3id.org/lex-id/data/> 
+
+## Question 1.1 : Siapa yang menetapkan <Legal Document>?
+SELECT distinct (coalesce(?label, ?ans) as ?answer)
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:hasEnactionOfficial ?ans ;
+        rdfs:label "<Legal Document>"^^xsd:string .
+    OPTIONAL { ?ans rdfs:label ?label .}
+}
+-- example "Siapa yang menetapkan Peraturan Daerah Provinsi Jambi Nomor 11 Tahun 2009?":
+SELECT distinct (coalesce(?label, ?ans) as ?answer)
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:hasEnactionOfficial ?ans ;
+        rdfs:label "Peraturan Daerah Provinsi Jambi Nomor 11 Tahun 2009"^^xsd:string .
+    OPTIONAL { ?ans rdfs:label ?label .}
+}
+
+##Question 1.2 : Kapan <Legal Document> diundangkan?
+SELECT distinct (?ans)
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:hasPromulgationDate ?ans ;
+        rdfs:label "<Legal Document>"^^xsd:string .
+}
+-- example "Kapan Peraturan Daerah Kabupaten Batang Nomor 7 Tahun 2010 diundangkan?":
+SELECT distinct (?ans)
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:hasPromulgationDate ?ans ;
+        rdfs:label "Peraturan Daerah Kabupaten Batang Nomor 7 Tahun 2010"^^xsd:string .
+}
+
+##Question 1.3 : Kapan <Legal Document> ditetapkan?
+SELECT distinct ?ans
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:hasEnactionDate ?ans ;
+        rdfs:label "<Legal Document>"^^xsd:string .
+}
+-- example "Kapan Peraturan Daerah Kabupaten Buton Nomor 44 Tahun 2011 ditetapkan?"
+SELECT distinct ?ans
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:hasEnactionDate ?ans ;
+        rdfs:label "Peraturan Daerah Kabupaten Buton Nomor 44 Tahun 2011"^^xsd:string .
+}
+
+##Question 1.4 : Apa pertimbangan dalam membuat <Legal Document>?
+SELECT distinct ?consideration
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:considers ?consideration ;
+        rdfs:label "<Legal Document>"^^xsd:string .
+}
+--example "Apa pertimbangan dalam membuat Peraturan Daerah Kabupaten Buton Nomor 44 Tahun 2011?"
+SELECT distinct ?consideration
+WHERE {
+    ?LegalDocument a lexid-s:LegalDocument ;
+        lexid-s:considers ?consideration ;
+        rdfs:label "Peraturan Daerah Kabupaten Buton Nomor 44 Tahun 2011"^^xsd:string .
+}

@@ -1,0 +1,204 @@
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix dbo: <http://dbpedia.org/ontology/> 
+prefix dct: <http://purl.org/dc/terms/> 
+prefix owl: <http://www.w3.org/2002/07/owl#> 
+prefix wd: <https://www.wikidata.org/wiki/> 
+prefix lexid-s: <https://w3id.org/lex-id/schema/> 
+prefix lexid: <https://w3id.org/lex-id/data/> 
+
+##Question 5.1 : Bagaimana perubahan bunyi <Article & optional Section> dalam <Legal Document>?
+SELECT distinct (lcase(group_concat(distinct ?value; separator = "\\n")) as ?answer)
+WHERE
+{
+  {
+    SELECT distinct ?year ?number ?article
+    (lcase(concat(?larticle, " ", coalesce(?lsection, ""))) as ?lcontent) ?value
+    {
+        ?document a lexid-s:LegalDocument;
+            rdfs:label "<LegalDocument>"^^xsd:string .
+        ?document (lexid-s:hasContent|lexid-s:hasPart)* ?parent .
+        ?document lexid-s:amendedBy ?amendment .
+        ?amendment lexid-s:hasContent ?articleI ;
+        lexid-s:regulationYear ?year ;
+        lexid-s:regulationNumber ?number .
+        ?articleI lexid-s:modifies ?modification .
+        ?modification lexid-s:hasModificationTarget ?parent ;
+        lexid-s:hasModificationContent ?content .
+        ?content lexid-s:hasPart* ?article .      
+        ?article a lexid-s:Article ;
+            rdfs:label ?larticle .
+        {
+          {
+            ?article lexid-s:hasPart ?section .
+            ?section a lexid-s:Section ;
+            rdfs:label ?lsection ;
+            dct:description ?value .
+          }
+          UNION
+          {
+            ?article dct:description ?value .
+          }
+        }
+    }
+  }
+  FILTER regex(str(?lcontent), "^<Article & optional Section>(\\s|:|$)", "i")
+}
+GROUP BY ?year ?number ?article
+ORDER BY desc(?year) desc(?number)
+LIMIT 1
+--example "Bagaimana perubahan bunyi Pasal 16 ayat 1 dalam Peraturan Daerah Provinsi Sumatera Barat Nomor 4 Tahun 2011?"
+SELECT distinct (lcase(group_concat(distinct ?value; separator = "\\n")) as ?answer)
+WHERE
+{
+  {
+    SELECT distinct ?year ?number ?article
+    (lcase(concat(?larticle, " ", coalesce(?lsection, ""))) as ?lcontent) ?value
+    {
+        ?document a lexid-s:LegalDocument;
+            rdfs:label "Peraturan Daerah Provinsi Sumatera Barat Nomor 4 Tahun 2011"^^xsd:string .
+        ?document (lexid-s:hasContent|lexid-s:hasPart)* ?parent .
+        ?document lexid-s:amendedBy ?amendment .
+        ?amendment lexid-s:hasContent ?articleI ;
+        lexid-s:regulationYear ?year ;
+        lexid-s:regulationNumber ?number .
+        ?articleI lexid-s:modifies ?modification .
+        ?modification lexid-s:hasModificationTarget ?parent ;
+        lexid-s:hasModificationContent ?content .
+        ?content lexid-s:hasPart* ?article .      
+        ?article a lexid-s:Article ;
+            rdfs:label ?larticle .
+        {
+          {
+            ?article lexid-s:hasPart ?section .
+            ?section a lexid-s:Section ;
+            rdfs:label ?lsection ;
+            dct:description ?value .
+          }
+          UNION
+          {
+            ?article dct:description ?value .
+          }
+        }
+    }
+  }
+  FILTER regex(str(?lcontent), "^Pasal 16 ayat 1(\\s|:|$)", "i")
+}
+GROUP BY ?year ?number ?article
+ORDER BY desc(?year) desc(?number)
+LIMIT 1
+
+##Question 5.2 : Apa saja pasal yang dihapus dalam <legal Document>?
+SELECT distinct ?lDeleted
+WHERE {
+  ?legalDocument a lexid-s:LegalDocument;
+  	rdfs:label "<Legal document>"^^xsd:string;
+    lexid-s:amendedBy ?amend .
+  ?amend (lexid-s:hasPart|lexid-s:hasContent)* ?child .
+  ?child lexid-s:deletes ?deleted .
+  ?deleted rdf:type lexid-s:Article ;
+           rdfs:label ?lDeleted .               
+}
+-- example "Apa saja pasal yang dihapus dalam Undang-Undang Republik Indonesia Nomor 6 Tahun 1983?"
+SELECT distinct ?lDeleted
+WHERE {
+  ?legalDocument a lexid-s:LegalDocument;
+  	rdfs:label "Undang-Undang Republik Indonesia Nomor 6 Tahun 1983"^^xsd:string;
+    lexid-s:amendedBy ?amend .
+  ?amend (lexid-s:hasPart|lexid-s:hasContent)* ?child .
+  ?child lexid-s:deletes ?deleted .
+  ?deleted rdf:type lexid-s:Article ;
+           rdfs:label ?lDeleted .               
+}
+
+##Question 5.3 : Apa saja pasal yang ditambahkan dalam <legal Document>?
+SELECT distinct ?lAdded
+WHERE {
+  ?legalDocument a lexid-s:LegalDocument;
+  	rdfs:label "<Legal Document>"^^xsd:string;
+    lexid-s:amendedBy ?amend .
+  ?amend (lexid-s:hasPart|lexid-s:hasContent)* ?child .
+  ?child lexid-s:adds ?added .
+  ?added lexid-s:hasAdditionContent ?addedContent .
+  ?addedContent rdf:type lexid-s:Article;
+                rdfs:label ?lAdded          
+}
+-- example "Apa saja pasal yang ditambahkan dalam Undang-Undang Republik Indonesia Nomor 6 Tahun 1983?"
+SELECT distinct ?lAdded
+WHERE {
+  ?legalDocument a lexid-s:LegalDocument;
+  	rdfs:label "Undang-Undang Republik Indonesia Nomor 6 Tahun 1983"^^xsd:string;
+    lexid-s:amendedBy ?amend .
+  ?amend (lexid-s:hasPart|lexid-s:hasContent)* ?child .
+  ?child lexid-s:adds ?added .
+  ?added lexid-s:hasAdditionContent ?addedContent .
+  ?addedContent rdf:type lexid-s:Article;
+                rdfs:label ?lAdded          
+}
+
+##Question 5.4 : Apakah <Legal Document> mengalami amandemen?
+SELECT (IF(count(distinct ?amend) > 0, "Ya", "Tidak") as ?answer) 
+WHERE {
+  {
+    ?LegalDocument a lexid-s:LegalDocument ;
+  		rdfs:label "<Legal Document>"^^xsd:string ;
+    lexid-s:amendedBy ?amend 
+  }
+  UNION
+  {
+    ?amend a lexid-s:LegalDocument ;
+    	lexid-s:amends ?amended .
+    ?amended a lexid-s:LegalDocument ;
+    	rdfs:label "<Legal Document>"^^xsd:string ;
+  }
+}
+-- example "Apakah Undang-Undang Republik Indonesia Nomor 17 Tahun 2014 mengalami amandemen?"
+SELECT (IF(count(distinct ?amend) > 0, "Ya", "Tidak") as ?answer) 
+WHERE {
+  {
+    ?LegalDocument a lexid-s:LegalDocument ;
+  		rdfs:label "Undang-Undang Republik Indonesia Nomor 17 Tahun 2014"^^xsd:string ;
+    lexid-s:amendedBy ?amend 
+  }
+  UNION
+  {
+    ?amend a lexid-s:LegalDocument ;
+    	lexid-s:amends ?amended .
+    ?amended a lexid-s:LegalDocument ;
+    	rdfs:label "Undang-Undang Republik Indonesia Nomor 17 Tahun 2014"^^xsd:string ;
+  }
+}
+
+##Question 5.5: Apakah <Legal Document> masih berlaku?
+SELECT (IF(count(distinct ?document) > 0, "Tidak", "Ya") as ?answer) 
+WHERE {
+  {
+    ?LegalDocument a lexid-s:LegalDocument ;
+  		rdfs:label "<Legal Document>"^^xsd:string ;
+    lexid-s:repealedBy ?document 
+  }
+  UNION
+  {
+    ?document a lexid-s:LegalDocument ;
+    	lexid-s:repeals ?repealed .
+    ?repealed a lexid-s:LegalDocument ;
+    	rdfs:label "<Legal Document>"^^xsd:string ;
+  }
+}
+--example "Apakah Peraturan Pemerintah Republik Indonesia Nomor 2 Tahun 2000 masih berlaku?"
+SELECT (IF(count(distinct ?document) > 0, "Tidak", "Ya") as ?answer) 
+WHERE {
+  {
+    ?LegalDocument a lexid-s:LegalDocument ;
+  		rdfs:label "Peraturan Pemerintah Republik Indonesia Nomor 2 Tahun 2000"^^xsd:string ;
+    lexid-s:repealedBy ?document 
+  }
+  UNION
+  {
+    ?document a lexid-s:LegalDocument ;
+    	lexid-s:repeals ?repealed .
+    ?repealed a lexid-s:LegalDocument ;
+    	rdfs:label "Peraturan Pemerintah Republik Indonesia Nomor 2 Tahun 2000"^^xsd:string ;
+  }
+}

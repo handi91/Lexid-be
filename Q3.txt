@@ -1,0 +1,51 @@
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix dbo: <http://dbpedia.org/ontology/> 
+prefix dct: <http://purl.org/dc/terms/> 
+prefix owl: <http://www.w3.org/2002/07/owl#> 
+prefix wd: <https://www.wikidata.org/wiki/> 
+prefix lexid-s: <https://w3id.org/lex-id/schema/> 
+prefix lexid: <https://w3id.org/lex-id/data/> 
+
+##Question 3.1 : Apa saja Bab yang dibahas dalam <Legal Document>?
+SELECT distinct (concat(?contentLabel, ": ", ?contentName) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?content .
+  ?content a lexid-s:Chapter ;
+  rdfs:label ?contentLabel ;
+  lexid-s:name ?contentName .
+}
+--example "Apa saja Bab yang dibahas dalam Peraturan Daerah Provinsi Maluku Nomor 12 Tahun 2008?"
+SELECT distinct (concat(?contentLabel, ": ", ?contentName) as ?answer)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "Peraturan Daerah Provinsi Maluku Nomor 12 Tahun 2008"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?content .
+  ?content a lexid-s:Chapter ;
+  rdfs:label ?contentLabel ;
+  lexid-s:name ?contentName .
+}
+
+##Question 3.2 : Berapa jumlah Pasal yang diatur dalam <Legal Document>?
+SELECT (count(?article) as ?countArticle)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "<Legal Document>"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?article .
+  ?article a lexid-s:Article .
+}
+--example "Berapa jumlah Pasal yang diatur dalam Peraturan Daerah Kabupaten Banjar Nomor 18 Tahun 2012?": 
+SELECT (count(?article) as ?countArticle)
+WHERE {
+  ?LegalDocument a lexid-s:LegalDocument ;
+  lexid-s:hasContent ?topLevelContent ;
+  rdfs:label "Peraturan Daerah Kabupaten Banjar Nomor 18 Tahun 2012"^^xsd:string .
+  ?topLevelContent lexid-s:hasPart* ?article .
+  ?article a lexid-s:Article .
+}
