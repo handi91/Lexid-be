@@ -1,0 +1,8 @@
+fastapi
+numpy
+pandas
+rapidfuzz
+SPARQLWrapper
+stanza==1.3.0
+starlette
+uvicorn
