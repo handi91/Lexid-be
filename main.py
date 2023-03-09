@@ -5,10 +5,12 @@ import asyncio
 from execute_query import generate_get_query_result
 from mapping import generate_mapping
 from autocomplete_suggestion import generate_autocomplete_suggestion
+from alternative_mapping import generate_alternative_mapping
 
 app = FastAPI()
 
 mapping = None
+alternative_mapping = None
 get_query_result = None
 get_autocomplete_suggestion = None
 error_query_result = "error"
@@ -24,10 +26,11 @@ app.add_middleware(
 
 @app.on_event("startup")
 async def startup_event():
-    global mapping, get_query_result, get_autocomplete_suggestion
+    global mapping, get_query_result, get_autocomplete_suggestion, alternative_mapping
     mapping = generate_mapping()
     get_query_result = generate_get_query_result()
     get_autocomplete_suggestion = generate_autocomplete_suggestion()
+    alternative_mapping = generate_alternative_mapping()
 
 @app.get("/")
 async def index():
@@ -53,6 +56,19 @@ async def get_suggestions(input: str):
 async def get_autocomplete_suggestion_task(input: str):
     suggestions = get_autocomplete_suggestion(input)
     return suggestions
+
+@app.post("/ask2")
+async def get_answer_v2(question: str):
+    result = ""
+    query, question = alternative_mapping(question)
+    if query:
+        query_result = get_query_result(query)
+        if query_result != error_query_result:
+            result = query_result
+    return {
+        "question": question,
+        "result": result 
+    }
 
 @app.post("/ask")
 async def get_answer(question: str):
