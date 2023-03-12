@@ -142,7 +142,7 @@ PREFIX wd: <https://www.wikidata.org/wiki/>
 PREFIX lexid-s: <https://w3id.org/lex-id/schema/> 
 PREFIX lexid: <https://w3id.org/lex-id/data/> 
 
-SELECT (IF(count(distinct ?document) > 0, ""Tidak"", ""Ya"") as ?answer) 
+SELECT (IF(count(distinct ?document) > 0, ""Tidak, peraturan ini sudah dicabut"", ""Ya"") as ?answer) 
 WHERE {
   {
     ?LegalDocument a lexid-s:LegalDocument ;
