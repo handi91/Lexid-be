@@ -5,7 +5,7 @@ import stanza
 
 # stanfordnlp.download('id')  # This downloads the Indonesian models for the neural pipeline
 nlp = stanza.Pipeline(lang='id')  # This sets up a default neural pipeline in Indonesian
-text = "Apa pertimbangan dalam membuat Peraturan Daerah Kabupaten Batang Nomor 7 Tahun 2010?"
+text = "Peraturan Menteri Keuangan Republik Indonesia"
 doc = nlp(text)
 # doc = nlp("rumah sakit yang didirikan oleh swasta dapat berupa rumah sakit dengan penanaman modal asing.")
 # doc = nlp(
@@ -26,4 +26,5 @@ for idx_sentence in range(len(doc.sentences)):
 
 res = pandas.DataFrame(relationships)
 print(json.dumps(relationships, indent=4))
+print(res)
 # print(doc.sentences[0].print_dependencies())

@@ -28,7 +28,8 @@ def generate_alternative_mapping():
             return "", ""
 
         scorer_metric = rapidfuzz_fuzz.token_set_ratio
-        question_process = rapidfuzz_process.extract(" ".join(input_words[:4]), question_pattern, scorer=scorer_metric, limit=5)
+        question_process = rapidfuzz_process.extract(" ".join(input_words[:4] + input_words[-1:]), question_pattern, scorer=scorer_metric, limit=5)
+        print(question_process)
         peraturan_process = rapidfuzz_process.extract(" ".join(input_words[1:]), peraturan_label, scorer=rapidfuzz_fuzz.token_sort_ratio, limit=5)
         peraturan = [p for p, _, _ in peraturan_process]
         candidate_list = {}

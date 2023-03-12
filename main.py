@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 import uvicorn
-import asyncio
 from execute_query import generate_get_query_result
 from mapping import generate_mapping
 from autocomplete_suggestion import generate_autocomplete_suggestion
@@ -39,23 +38,11 @@ async def index():
     }
 
 @app.post("/suggestion")
-async def get_suggestions(input: str):
-    global suggestion_task
-
-    if suggestion_task is not None:
-        try:
-            suggestion_task.cancel()
-        except:
-            pass
-    suggestion_task = asyncio.create_task(get_autocomplete_suggestion_task(input))
-    suggestions = await suggestion_task
+async def get_suggestions(input: str, index: int, head: str, prev: str):
+    suggestions = get_autocomplete_suggestion(input, index, head, prev)
     return {
         "suggestions": suggestions
     }
-
-async def get_autocomplete_suggestion_task(input: str):
-    suggestions = get_autocomplete_suggestion(input)
-    return suggestions
 
 @app.post("/ask2")
 async def get_answer_v2(question: str):
