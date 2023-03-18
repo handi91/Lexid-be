@@ -148,11 +148,3 @@ def generate_mapping():
             return ''
     
     return mapping
-
-# df = pd.read_csv("sample-question.csv")
-# for j in df['Q']:
-#     print(mapping(j))
-# get_result(mapping("Bagaimana perubahan bunyi Pasal 43 ayat 3 dalam Peraturan Komisi Pemberantasan Korupsi Republik Indonesia Tahun 2006 Nomor 06?"))
-# print(mapping("Bagaimana perubahan bunyi Pasal 43 ayat 3 dalam Peraturan Komisi Pemberantasan Korupsi Republik Indonesia Tahun 2006 Nomor 06?"))
-# print(mapping("Siapa yang menetapkan Peraturan Daerah Kabupaten Batang Nomor 7 Tahun 2010?"))
-# print(mapping("Kapan Peraturan Menteri Kesehatan Republik Indonesia Nomor 49 Tahun 2019 ditetapkan?"))

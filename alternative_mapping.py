@@ -34,17 +34,14 @@ def generate_alternative_mapping():
         peraturan = [p for p, _, _ in peraturan_process]
         candidate_list = {}
         for q, _, _ in question_process:
-            print(q)
             query_index = int(question_template_df[question_template_df['q_pattern']==q]['query_index'])
             if query_index == 11 or query_index == 12 or query_index == 13:
                 data_used = pasal_label
-                pattern_replaced = "pasal_num"
+                pattern_replaced = "pasal_num" if query_index == 11 else "pasal_num ayat_num"
                 if query_index == 12:
                     data_used = pasal_with_ayat
-                    pattern_replaced = "pasal_num ayat_num"
                 elif query_index == 13:
                     data_used = pasal_optional_ayat
-                    pattern_replaced = "pasal_num ayat_num"
                 pasal_ayat_process = rapidfuzz_process.extract(input_text, data_used, scorer=scorer_metric, limit=5)
                 pasal_ayat = [a for a, _, _ in pasal_ayat_process]
                 for title in peraturan:
