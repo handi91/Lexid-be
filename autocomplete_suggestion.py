@@ -14,7 +14,7 @@ def generate_autocomplete_suggestion():
     with_tail_question_head = {'Apakah': ['mengalami amandemen?', 'masih berlaku?'], 'Kapan':['ditetapkan?', 'diundangkan?']}
     def get_suggestion(input_text, autocomplete_index, q_head, previous):
         suggestions = []
-        if not input_text:
+        if not input_text and autocomplete_index==0:
             return suggestions
         scorer_metric = rapidfuzz_fuzz.token_ratio
         prefix = ''
