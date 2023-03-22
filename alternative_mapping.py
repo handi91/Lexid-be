@@ -1,9 +1,6 @@
 import re
 import pandas as pd
 from rapidfuzz import fuzz as rapidfuzz_fuzz, process as rapidfuzz_process
-from execute_query import generate_get_query_result
-from mapping import generate_mapping
-
 
 def generate_alternative_mapping():
     question_template_df = pd.read_csv("question-sparql-template.csv")
@@ -15,6 +12,7 @@ def generate_alternative_mapping():
     pasal_with_ayat_df = pd.read_csv("valid-pasal-with-ayat-label.csv")
     pasal_with_ayat = pasal_with_ayat_df['pasal_ayat']
     pasal_optional_ayat_df = pd.read_csv("valid-pasal-optional-ayat-label.csv")
+    pasal_optional_ayat_df = pasal_optional_ayat_df.fillna('')
     pasal_optional_ayat = pasal_optional_ayat_df['pasal_ayat']
     def set_query(query_index, **kwargs):
         query_template = question_template_df[question_template_df['query_index'] == query_index].reset_index(drop=True)['query_template'][0]
@@ -24,12 +22,14 @@ def generate_alternative_mapping():
     
     def alternative_mapping(input_text):
         input_words = input_text.split(" ")
-        if len(input_words) <= 5: # word count threshold
-            return "", ""
-
-        scorer_metric = rapidfuzz_fuzz.token_set_ratio
-        question_process = rapidfuzz_process.extract(" ".join(input_words[:4] + input_words[-1:]), question_pattern, scorer=scorer_metric, limit=5)
-        peraturan_process = rapidfuzz_process.extract(" ".join(input_words[1:]), peraturan_label, scorer=rapidfuzz_fuzz.token_sort_ratio, limit=5)
+        if len(input_words) <= 7: # word count threshold
+            return "", "", -1
+        question_part = " ".join(input_words[:4] + input_words[-1:])
+        peraturan_part = " ".join(input_words[2:])
+        pasal_ayat_part = " ".join(input_words[2:7])
+        ratio_metric = rapidfuzz_fuzz.ratio
+        question_process = rapidfuzz_process.extract(question_part, question_pattern, scorer=ratio_metric, limit=4)
+        peraturan_process = rapidfuzz_process.extract(peraturan_part, peraturan_label, scorer=ratio_metric, limit=5)
         peraturan = [p for p, _, _ in peraturan_process]
         candidate_list = {}
         for q, _, _ in question_process:
@@ -41,7 +41,7 @@ def generate_alternative_mapping():
                     data_used = pasal_with_ayat
                 elif query_index == 13:
                     data_used = pasal_optional_ayat
-                pasal_ayat_process = rapidfuzz_process.extract(input_text, data_used, scorer=scorer_metric, limit=5)
+                pasal_ayat_process = rapidfuzz_process.extract(pasal_ayat_part, data_used, scorer=ratio_metric, limit=5)
                 pasal_ayat = [a for a, _, _ in pasal_ayat_process]
                 for title in peraturan:
                     question = re.sub('legal_title', title, q)
@@ -61,10 +61,10 @@ def generate_alternative_mapping():
                         'legal_title': title
                     }
         try:
-            candidate_question_process = rapidfuzz_process.extract(input_text, candidate_list.keys(), scorer=rapidfuzz_fuzz.ratio)[0][0]
+            candidate_question_process = rapidfuzz_process.extract(input_text, candidate_list.keys(), scorer=ratio_metric)[0][0]
             query_index = candidate_list[candidate_question_process].pop('query_index')
-            return set_query(query_index, **candidate_list[candidate_question_process]), candidate_question_process
+            return set_query(query_index, **candidate_list[candidate_question_process]), candidate_question_process, query_index
         except:
-            return "", ""
+            return "", "", -1
     
     return alternative_mapping

@@ -47,9 +47,9 @@ async def get_suggestions(input: str, index: int, head: str, prev: str):
 @app.post("/ask2")
 async def get_answer_v2(question: str):
     result = ""
-    query, question = alternative_mapping(question)
+    query, question, q_index = alternative_mapping(question)
     if query:
-        query_result = get_query_result(query)
+        query_result = get_query_result(query, q_index)
         if query_result != error_query_result:
             result = query_result
     return {
@@ -61,9 +61,9 @@ async def get_answer_v2(question: str):
 async def get_answer(question: str):
     result = ""
     invalid = True
-    query = mapping(question)
+    query, q_index = mapping(question)
     if query:
-        query_result = get_query_result(query)
+        query_result = get_query_result(query, q_index)
         if query_result != error_query_result:
             invalid = False
             result = query_result

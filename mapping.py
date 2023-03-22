@@ -23,18 +23,18 @@ def generate_mapping():
         try:
             if word_head[target_idx] == head_values:
                 target_stop = target_idx
-                # get the first num
+                # get the first number
                 try:
                     first_num_index = text_pos.index("NUM", target_stop)
                     target_stop = first_num_index - 1
                 except:
                     first_num_index = None
-                # get second num
+                # get second number
                 try:
                     second_num_index = text_pos.index("NUM", first_num_index + 1)
                 except:
                     second_num_index = None
-                # legal title
+                # get legal title
                 for j in range(len(word_values[target_idx:target_stop])):
                     if word_values[target_idx+j][0] in ['/', ',']:
                         target += word_values[target_idx+j][0]
@@ -43,7 +43,7 @@ def generate_mapping():
                         target += word_values[target_idx+j]
                     if word_values[target_idx+j+1][0] not in ['/', ',']:
                         target += " "
-                # legal number and year
+                # handle legal number and year
                 if first_num_index and second_num_index:
                     if word_values[first_num_index-1] == "nomor" and word_values[second_num_index-1] == "tahun":
                         target += word_values[first_num_index-1] + " " + word_values[first_num_index] \
@@ -72,7 +72,7 @@ def generate_mapping():
     def mapping(text):
         doc = nlp(text)
         if len(doc.sentences) != 1:
-            return ""
+            return "", -1
 
         ## POS tagging & dependency parsing result
         words = doc.sentences[0].words
@@ -135,16 +135,16 @@ def generate_mapping():
                     question_type = 13
                     legal_index = word_deprel.index('nmod') if 'nmod' in word_deprel else 0
             else:
-                return ''
+                return '', -1
             
         legal_target = get_legal_target(legal_index, legal_head, word_head, text_pos, word_values) if legal_index != 0 else ''
         if legal_target != '':
             if target_pasal != '' and target_ayat != '':
-                return set_query(question_type, legal_title=legal_target, pasal_num=target_pasal, ayat_num=target_ayat)
+                return set_query(question_type, legal_title=legal_target, pasal_num=target_pasal, ayat_num=target_ayat), question_type
             elif target_pasal != '':
-                return set_query(question_type, legal_title=legal_target, pasal_num=target_pasal)
-            return set_query(question_type, legal_title=legal_target)
+                return set_query(question_type, legal_title=legal_target, pasal_num=target_pasal), question_type
+            return set_query(question_type, legal_title=legal_target), question_type
         else:
-            return ''
+            return '', -1
     
     return mapping

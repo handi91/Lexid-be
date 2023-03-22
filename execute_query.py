@@ -1,10 +1,13 @@
 from SPARQLWrapper import SPARQLWrapper, JSON
 import os
+import locale
+from datetime import datetime
 from dotenv import load_dotenv
 
 def generate_get_query_result():
     load_dotenv()
     sparql = SPARQLWrapper(os.environ.get('URL', 'http://localhost:9999/blazegraph/sparql'))
+    locale.setlocale(locale.LC_ALL, "id_ID")
     prefix = '''
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
@@ -18,14 +21,14 @@ def generate_get_query_result():
     '''
     sparql.setReturnFormat(JSON)
 
-    def get_result(query):
+    def get_result(query, question_type):
         sparql.setQuery(prefix + query)
         try:
             result = sparql.queryAndConvert()
             answer = ";\n".join(ans['answer']['value'] for ans in result['results']['bindings'])
             if not answer:
                 answer = "Jawaban tidak ditemukan"
-            return answer
+            return answer if question_type not in [2, 3] else datetime.strptime(answer, "%Y-%m-%d").strftime("%d %B %Y")
         except:
             return "error"
     return get_result

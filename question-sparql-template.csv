@@ -198,7 +198,7 @@ Kapan legal_title ditetapkan?,3,"
 SELECT distinct ?answer
 WHERE {
     ?LegalDocument a lexid-s:LegalDocument ;
-        lexid-s:hasPromulgationDate ?answer ;
+        lexid-s:hasEnactionDate ?answer ;
         rdfs:label ""legal_title""^^xsd:string .
 }
 "
@@ -206,7 +206,7 @@ Kapan legal_title diundangkan?,2,"
 SELECT distinct ?answer
 WHERE {
     ?LegalDocument a lexid-s:LegalDocument ;
-        lexid-s:hasEnactionDate ?answer ;
+        lexid-s:hasPromulgationDate ?answer ;
         rdfs:label ""legal_title""^^xsd:string .
 }
 "
