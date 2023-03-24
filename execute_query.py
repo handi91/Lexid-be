@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 def generate_get_query_result():
     load_dotenv()
     sparql = SPARQLWrapper(os.environ.get('URL', 'http://localhost:9999/blazegraph/sparql'))
-    locale.setlocale(locale.LC_ALL, "id_ID")
+    locale.setlocale(locale.LC_ALL, "id_ID.UTF-8")
     prefix = '''
     PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
