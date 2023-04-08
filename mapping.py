@@ -7,11 +7,14 @@ def generate_mapping():
     nlp = stanza.Pipeline('id')
     templates = pd.read_csv('question-sparql-template.csv')
     question_parse = pd.read_csv('question-parse-pattern.csv')
+    semantic_questions = pd.read_csv('semantic-question-collection.csv').set_index('Question').fillna('')
 
     def set_query(query_index, **kwargs):
-        query_template = templates[templates['query_index'] == query_index].reset_index(drop=True)['query_template'][0]
+        query_template = templates[templates['query_index'] == query_index]\
+                                  .reset_index(drop=True)['query_template'][0]
         for key, value in kwargs.items():
-            query_template = re.sub(key, value.title() if key != "ayat_num" else value, query_template)
+            query_template = re.sub(key, value.title() if key != "ayat_num" else value,
+                                    query_template)
         if query_index == 13:
             ayat = kwargs.get('ayat_num')
             if not ayat:
@@ -70,9 +73,24 @@ def generate_mapping():
         }
 
     def mapping(text):
+        result_prefix = ""
+        try:
+            legal_ref = semantic_questions['legal_ref'][text]
+            pasal_ref = semantic_questions['pasal_ref'][text]
+            ayat_ref = semantic_questions['ayat_ref'][text]
+            result_prefix = f"Berdasarkan {pasal_ref} {ayat_ref} {legal_ref}:\n" if ayat_ref \
+                            else f"Berdasarkan {pasal_ref} {legal_ref}:\n"
+            if ayat_ref != '':
+                return set_query(12, legal_title=legal_ref,
+                                 pasal_num=pasal_ref, ayat_num=ayat_ref), 12, result_prefix
+            return set_query(11, legal_title=legal_ref,
+                             pasal_num=pasal_ref, ayat_num=ayat_ref), 11, result_prefix
+        except:
+            pass
+        
         doc = nlp(text)
         if len(doc.sentences) != 1:
-            return "", -1
+            return "", -1, result_prefix
 
         ## POS tagging & dependency parsing result
         words = doc.sentences[0].words
@@ -95,7 +113,9 @@ def generate_mapping():
         if question_info:
             question_type = question_info['q_type']
             legal_head = question_info['legal_head']
-            legal_index = word_deprel.index(question_info['legal_rel']) if question_info['legal_rel'] in word_deprel else 0
+            legal_index = word_deprel.index(
+                              question_info['legal_rel']
+                          ) if question_info['legal_rel'] in word_deprel else 0
         else:
             if root == "apa" and first == "apa" and verb == "membuat":
                 legal_head = verb
@@ -135,16 +155,19 @@ def generate_mapping():
                     question_type = 13
                     legal_index = word_deprel.index('nmod') if 'nmod' in word_deprel else 0
             else:
-                return '', -1
+                return '', -1, result_prefix
             
-        legal_target = get_legal_target(legal_index, legal_head, word_head, text_pos, word_values) if legal_index != 0 else ''
+        legal_target = get_legal_target(legal_index, legal_head,
+                                        word_head, text_pos, word_values) if legal_index != 0 else ''
         if legal_target != '':
             if target_pasal != '' and target_ayat != '':
-                return set_query(question_type, legal_title=legal_target, pasal_num=target_pasal, ayat_num=target_ayat), question_type
+                return set_query(question_type, legal_title=legal_target,
+                                 pasal_num=target_pasal, ayat_num=target_ayat), question_type, result_prefix
             elif target_pasal != '':
-                return set_query(question_type, legal_title=legal_target, pasal_num=target_pasal), question_type
-            return set_query(question_type, legal_title=legal_target), question_type
+                return set_query(question_type, legal_title=legal_target,
+                                 pasal_num=target_pasal), question_type, result_prefix
+            return set_query(question_type, legal_title=legal_target), question_type, result_prefix
         else:
-            return '', -1
+            return '', -1, result_prefix
     
     return mapping

@@ -5,13 +5,17 @@ from rapidfuzz import fuzz as rapidfuzz_fuzz, process as rapidfuzz_process
 def generate_autocomplete_suggestion():
     pasal_optional_ayat_df = pd.read_csv("valid-pasal-optional-ayat-label.csv")
     pasal_optional_ayat = list(pasal_optional_ayat_df['pasal_ayat'])
-    question_pattern_df = pd.read_csv("Question-Head-And-Tail.csv", keep_default_na=False)
-    question_head = list(question_pattern_df['head'].unique())
+    question_head_df = pd.read_csv("Question-Head.csv", keep_default_na=False)
+    question_head = list(question_head_df['head'])
+    semantic_type =  question_head_df.set_index('head')
     legal_parse_df = pd.read_csv("peraturan-grouping.csv")
     legal_type = legal_parse_df['tipe']
     legal_number_year = legal_parse_df.set_index('tipe')
     pasal_and_ayat_question_head = ['Bagaimana bunyi', 'Bagaimana perubahan bunyi']
-    with_tail_question_head = {'Apakah': ['mengalami amandemen?', 'masih berlaku?'], 'Kapan':['ditetapkan?', 'diundangkan?']}
+    with_tail_question_head = {
+        'Apakah': ['mengalami amandemen?', 'masih berlaku?'],
+        'Kapan':['ditetapkan?', 'diundangkan?']
+    }
     def get_suggestion(input_text, autocomplete_index, q_head, previous):
         suggestions = []
         if not input_text and autocomplete_index==0:
@@ -22,6 +26,9 @@ def generate_autocomplete_suggestion():
         if autocomplete_index == 0:
             data_used = question_head
         elif autocomplete_index == 1:
+            is_semantic_content = semantic_type['is_semantic'][previous]
+            if is_semantic_content == 1:
+                return suggestions
             if q_head in pasal_and_ayat_question_head:
                 data_used = pasal_optional_ayat
                 prefix = " dalam"

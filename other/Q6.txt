@@ -1,0 +1,34 @@
+prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix dbo: <http://dbpedia.org/ontology/> 
+prefix dct: <http://purl.org/dc/terms/> 
+prefix owl: <http://www.w3.org/2002/07/owl#> 
+prefix wd: <https://www.wikidata.org/wiki/> 
+prefix lexid-s: <https://w3id.org/lex-id/schema/> 
+prefix lexid: <https://w3id.org/lex-id/data/> 
+
+
+# Apa saja kegiatan yang dapat menggunakan Bantuan Pendanaan PTN Badan Hukum?
+SELECT distinct (replace (concat(?lqActType, " ", group_concat(distinct lcase(replace (?lqObject , "\\W+$" , "")); separator ="; dan ") ,"."), "Concept", "", "i") as ?answer)
+{
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+  lexid-s:hasActType ?actType ;
+  lexid-s:hasQualifier ?qualifier .
+  ?subject rdfs:label "Concept Bantuan Pendanaan Ptn Badan Hukum" .
+  ?actType rdfs:label "Concept Digunakan" .
+  ?qualifier lexid-s:hasQualifierType ?qtype ;
+  lexid-s:hasQualifierValue ?qvalue .
+  ?qtype rdfs:label "Concept Untuk" .
+  ?qvalue lexid-s:hasActType ?qActType ;
+  lexid-s:hasObject ?qObject .
+  ?qActType rdfs:label ?lqActType .
+  ?qObject lexid-s:hasElement ?qObjects ;
+  rdfs:label ?conjQObject .
+  ?qObjects dct:description ?lqObject .
+}
+GROUP BY ?lqActType
+
+# 
