@@ -171,33 +171,37 @@ WHERE {
 }
 
 ##Question 5.5: Apakah <Legal Document> masih berlaku?
-SELECT (IF(count(distinct ?document) > 0, "Tidak", "Ya") as ?answer) 
+SELECT (IF(count(distinct ?document) > 0, concat("Tidak, peraturan ini sudah dicabut oleh ", group_concat(distinct ?ldocument ; separator=", ")), "Ya") as ?answer) 
 WHERE {
   {
     ?LegalDocument a lexid-s:LegalDocument ;
   		rdfs:label "<Legal Document>"^^xsd:string ;
-    lexid-s:repealedBy ?document 
+      lexid-s:repealedBy ?document .
+    ?document rdfs:label ?ldocument .
   }
   UNION
   {
     ?document a lexid-s:LegalDocument ;
-    	lexid-s:repeals ?repealed .
+    	lexid-s:repeals ?repealed ;
+      rdfs:label ?ldocument .
     ?repealed a lexid-s:LegalDocument ;
     	rdfs:label "<Legal Document>"^^xsd:string ;
   }
 }
 --example "Apakah Peraturan Pemerintah Republik Indonesia Nomor 2 Tahun 2000 masih berlaku?"
-SELECT (IF(count(distinct ?document) > 0, "Tidak", "Ya") as ?answer) 
+SELECT (IF(count(distinct ?document) > 0, concat("Tidak, peraturan ini sudah dicabut oleh ", group_concat(distinct ?ldocument ; separator=", ")), "Ya") as ?answer) 
 WHERE {
   {
     ?LegalDocument a lexid-s:LegalDocument ;
   		rdfs:label "Peraturan Pemerintah Republik Indonesia Nomor 2 Tahun 2000"^^xsd:string ;
-    lexid-s:repealedBy ?document 
+    lexid-s:repealedBy ?document .
+    ?document rdfs:label ?ldocument .
   }
   UNION
   {
     ?document a lexid-s:LegalDocument ;
-    	lexid-s:repeals ?repealed .
+    	lexid-s:repeals ?repealed ;
+        rdfs:label ?ldocument .
     ?repealed a lexid-s:LegalDocument ;
     	rdfs:label "Peraturan Pemerintah Republik Indonesia Nomor 2 Tahun 2000"^^xsd:string ;
   }

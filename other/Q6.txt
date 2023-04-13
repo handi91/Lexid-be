@@ -15,20 +15,137 @@ SELECT distinct (replace (concat(?lqActType, " ", group_concat(distinct lcase(re
   ?source lexid-s:hasRule ?norm .
   ?norm lexid-s:hasAct ?act .
   ?act lexid-s:hasSubject ?subject ;
-  lexid-s:hasActType ?actType ;
-  lexid-s:hasQualifier ?qualifier .
-  ?subject rdfs:label "Concept Bantuan Pendanaan Ptn Badan Hukum" .
-  ?actType rdfs:label "Concept Digunakan" .
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasQualifier ?qualifier .
+  ?subject rdfs:label "Concept Bantuan Pendanaan Ptn Badan Hukum"^^xsd:string .
+  ?actType rdfs:label "Concept Digunakan"^^xsd:string .
   ?qualifier lexid-s:hasQualifierType ?qtype ;
-  lexid-s:hasQualifierValue ?qvalue .
-  ?qtype rdfs:label "Concept Untuk" .
+             lexid-s:hasQualifierValue ?qvalue .
+  ?qtype rdfs:label "Concept Untuk"^^xsd:string .
   ?qvalue lexid-s:hasActType ?qActType ;
-  lexid-s:hasObject ?qObject .
+          lexid-s:hasObject ?qObject .
   ?qActType rdfs:label ?lqActType .
-  ?qObject lexid-s:hasElement ?qObjects ;
-  rdfs:label ?conjQObject .
+  ?qObject lexid-s:hasElement ?qObjects .
   ?qObjects dct:description ?lqObject .
 }
 GROUP BY ?lqActType
 
-# 
+# apa format SOP yang digunakan di kementerian ketenagakerjaan?
+SELECT distinct (replace(str(?lObject), "Concept ",  "", "i") as ?answer)
+{
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasQualifier ?qualifier ;
+       lexid-s:hasObject ?object.
+  ?subject rdfs:label "Concept Penyusunan Sop"^^xsd:string .
+  ?actType rdfs:label "Concept Menggunakan"^^xsd:string .
+  ?qualifier lexid-s:hasQualifierType ?qtype ;
+             lexid-s:hasQualifierValue ?qvalue .
+  ?qtype rdfs:label "Concept Di"^^xsd:string .
+  ?qvalue rdfs:label "Concept Kementerian Ketenagakerjaan"^^xsd:string.
+  ?object rdfs:label ?lObject .
+}
+
+# apa saja alat bukti yang dapat diajukan untuk diperiksa di persidangan?
+SELECT distinct (concat(group_concat(distinct lcase(replace(?lObject , "\\W+$" , "")); separator ="; ") ,".") as ?answer)
+{
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasObject ?object .
+  ?subject lexid-s:hasSubject ?subj ;
+           lexid-s:hasCondition ?condition .
+  ?subj rdfs:label "Concept Alat Bukti" .
+  ?condition lexid-s:hasModality ?modality ;
+             lexid-s:hasActType ?cActType ;
+             lexid-s:hasQualifier ?cQualifier.
+  ?modality rdfs:label "Concept Dapat" .
+  ?cActType rdfs:label "Concept Diajukan" .
+  ?cQualifier lexid-s:hasQualifierType ?cQtype ;
+              lexid-s:hasQualifierValue ?cQvalue .
+  ?cQtype rdfs:label "Concept Untuk" .
+  ?cQvalue lexid-s:hasActType ?cQactType ;
+           lexid-s:hasQualifier ?cQqualifier .
+  ?cQactType rdfs:label "Concept Diperiksa" .
+  ?cQqualifier lexid-s:hasQualifierType ?cQQtype ;
+               lexid-s:hasQualifierValue ?cQQvalue .
+  ?cQQtype rdfs:label "Concept Di" .
+  ?cQQvalue rdfs:label "Concept Persidangan" .
+  ?actType rdfs:label "Concept Meliputi" .
+  ?object lexid-s:hasElement ?objects .
+  ?objects dct:description ?lObject .
+}
+
+# Apa saja unsur anggota panitia tata batas kawasan hutan?
+SELECT distinct ?answer
+{
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasQualifier ?qualifier .
+  ?subject rdfs:label "Concept Anggota Panitia Tata Batas Kawasan Hutan" .
+  ?actType rdfs:label "Concept Terdiri" .
+  ?qualifier lexid-s:hasQualifierType ?qtype ;
+             lexid-s:hasQualifierValue ?qvalue .
+  ?qtype rdfs:label "Concept Dari" .
+  ?qvalue dct:description ?answer .
+}
+
+# Apa saja bahan bakar minyak yang diberikan fasilitas pajak pertambahan nilai tidak dipungut?
+SELECT distinct (concat(group_concat(distinct lcase(replace(?lObject , "\\W+$" , "")); separator ="; ") ,".") as ?answer)
+{
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasObject ?object .
+  ?subject rdfs:label "Concept Kementerian Koordinator Bidang Pembangunan Manusia Dan Kebudayaan"^^xsd:string .
+  ?actType rdfs:label "Concept Mengoordinasikan"^^xsd:string .
+  ?object lexid-s:hasElement ?objects .
+  ?objects dct:description ?lObject .
+}
+
+# Apa saja yang meliputi evaluasi akip?
+SELECT distinct (concat(group_concat(distinct lcase(replace(?lObject , "\\W+$" , "")); separator ="; ") ,".") as ?answer)
+{
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasObject ?object .
+  ?subject lexid-s:hasSubject ?subj .
+  ?subj rdfs:label "Concept Evaluasi Akip"^^xsd:string .
+  ?actType rdfs:label "Concept Meliputi"^^xsd:string .
+  ?object lexid-s:hasElement ?objects .
+  ?objects dct:description ?lObject .
+}
+
+# Apa saja yang meliputi pembinaan sumber daya manusia di bidang meteorologi, klimatologi, dan geofisika?
+SELECT distinct (concat(group_concat(distinct lcase(replace(?lObject , "\\W+$" , "")); separator ="; ") ,".") as ?answer) 
+{
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasQualifier ?qualifier ;
+       lexid-s:hasObject ?object .
+  ?subject lexid-s:hasSubject ?subj .
+  ?subj rdfs:label "Concept Pembinaan Sumber Daya Manusia"^^xsd:string .
+  ?actType rdfs:label "Concept Meliputi"^^xsd:string .
+  ?qualifier lexid-s:hasQualifierType ?qtype ;
+             lexid-s:hasQualifierValue ?qvalue .
+  ?qtype rdfs:label "Concept Di"^^xsd:string .
+  ?qvalue lexid-s:hasElement ?elements .
+  ?elements rdfs:label ?lelement .
+  FILTER (
+    str(?lelement) = "Concept Bidang Meteorologi" ||
+    str(?lelement) = "Concept Klimatologi" ||
+    str(?lelement) = "Concept Geofisika"
+  )
+  ?object lexid-s:hasElement ?objects .
+  ?objects dct:description ?lObject .
+}
