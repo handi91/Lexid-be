@@ -72,7 +72,7 @@ WHERE {
 }
 "
 Apakah legal_title masih berlaku?,17,"
-SELECT (IF(count(distinct ?document) > 0, concat("Tidak, peraturan ini sudah dicabut oleh ", group_concat(distinct ?ldocument ; separator=", ")), "Ya") as ?answer) 
+SELECT (IF(count(distinct ?document) > 0, concat(""Tidak, peraturan ini sudah dicabut oleh "", group_concat(distinct ?ldocument ; separator="", "")), ""Ya"") as ?answer) 
 WHERE {
   {
     ?LegalDocument a lexid-s:LegalDocument ;
