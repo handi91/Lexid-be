@@ -1,24 +1,32 @@
 import stanza
 import pandas as pd
 import re
+import string
 
 def generate_mapping():
     stanza.download('id')
     nlp = stanza.Pipeline('id')
     templates = pd.read_csv('question-sparql-template.csv')
+    semantic_templates = pd.read_csv('question-sparql-template-semantic.csv')
     question_parse = pd.read_csv('question-parse-pattern.csv')
-    semantic_questions = pd.read_csv('semantic-question-collection.csv').set_index('Question').fillna('')
+    # semantic_questions = pd.read_csv('semantic-question-collection.csv').set_index('Question').fillna('')
 
-    def set_query(query_index, **kwargs):
-        query_template = templates[templates['query_index'] == query_index]\
-                                  .reset_index(drop=True)['query_template'][0]
-        for key, value in kwargs.items():
-            query_template = re.sub(key, value.title() if key != "ayat_num" else value,
-                                    query_template)
-        if query_index == 13:
-            ayat = kwargs.get('ayat_num')
-            if not ayat:
-                query_template = re.sub("ayat_num", "", query_template)
+    def set_query(query_index, is_semantic=False, **kwargs):
+        if not is_semantic:
+            query_template = templates[templates['query_index'] == query_index]\
+                                      .reset_index(drop=True)['query_template'][0]
+            for key, value in kwargs.items():
+                query_template = re.sub(key, value.title() if key != "ayat_num" else value,
+                                        query_template)
+            if query_index == 13:
+                ayat = kwargs.get('ayat_num')
+                if not ayat:
+                    query_template = re.sub("ayat_num", "", query_template)
+        else:
+            query_template = semantic_templates[semantic_templates['query_index'] == query_index]\
+                                                .reset_index(drop=True)['query_template'][0]
+            for key, value in kwargs.items():
+                query_template = re.sub(key, value.title(), query_template)
         return query_template
 
     def get_legal_target(target_idx, head_values, word_head, text_pos, word_values):
@@ -71,26 +79,66 @@ def generate_mapping():
             'legal_head': target_row['legal_head'][0],
             'legal_rel': target_row['legal_rel'][0]
         }
+    
+    def convert_passive_to_active_verb(verb):
+        active_verb = ""
+        if verb[2] in ['k', 't', 's', 'p'] and verb[3] not in ['k', 't', 's', 'p']:
+            if verb[2] == "k":
+                active_verb += "meng" + verb[3:]
+            elif verb[2] == "t":
+                active_verb += "men" + verb[3:]
+            elif verb[2] == "s":
+                active_verb += "meny" + verb[3:]
+            else:
+                active_verb += "mem" + verb[3:]
+        else:
+            if verb[2] in ['l', 'm', 'n', 'r', 'w', 'y']:
+                active_verb += 'me' + verb[2:]
+            elif verb[2] in ['c', 'd', 'j', 's', 't', 'z']:
+                active_verb += 'men' + verb[2:]
+            elif verb[2] in ['b', 'f', 'p', 'v']:
+                active_verb += 'mem' + verb[2:]
+            else:
+                active_verb += "meng" + verb[2:]
+        return active_verb
+    
+    def get_subject_label(target_idx, head_values, word_head, word_values):
+        subject_label = ""
+        if word_head[target_idx] == head_values:
+            target_stop = len(word_values) if word_values[-1] not in string.punctuation else len(word_values) - 1
+            for j in range(len(word_values[target_idx:target_stop])):
+                if word_values[target_idx+j][0] in ['/', ',']:
+                    subject_label += word_values[target_idx+j][0]
+                    subject_label += " " + word_values[target_idx+j][1:] if word_values[target_idx+j][1:] else ""
+                else:
+                    subject_label += word_values[target_idx+j]
+                try:
+                    if word_values[target_idx+j+1][0] not in ['/', ',']:
+                        subject_label += " "
+                except:
+                    pass
 
+        return subject_label.strip()
+        
     def mapping(text):
-        result_prefix = ""
-        try:
-            legal_ref = semantic_questions['legal_ref'][text]
-            pasal_ref = semantic_questions['pasal_ref'][text]
-            ayat_ref = semantic_questions['ayat_ref'][text]
-            result_prefix = f"Berdasarkan {pasal_ref} {ayat_ref} {legal_ref}:\n" if ayat_ref \
-                            else f"Berdasarkan {pasal_ref} {legal_ref}:\n"
-            if ayat_ref != '':
-                return set_query(12, legal_title=legal_ref,
-                                 pasal_num=pasal_ref, ayat_num=ayat_ref), 12, result_prefix
-            return set_query(11, legal_title=legal_ref,
-                             pasal_num=pasal_ref, ayat_num=ayat_ref), 11, result_prefix
-        except:
-            pass
+        # result_prefix = ""
+        # try:
+        #     legal_ref = semantic_questions['legal_ref'][text]
+        #     pasal_ref = semantic_questions['pasal_ref'][text]
+        #     ayat_ref = semantic_questions['ayat_ref'][text]
+        #     result_prefix = f"Berdasarkan {pasal_ref} {ayat_ref} {legal_ref}:\n" if ayat_ref \
+        #                     else f"Berdasarkan {pasal_ref} {legal_ref}:\n"
+        #     if ayat_ref != '':
+        #         return set_query(12, legal_title=legal_ref,
+        #                          pasal_num=pasal_ref, ayat_num=ayat_ref), 12, result_prefix
+        #     return set_query(11, legal_title=legal_ref,
+        #                      pasal_num=pasal_ref, ayat_num=ayat_ref), 11, result_prefix
+        # except:
+        #     pass
         
         doc = nlp(text)
         if len(doc.sentences) != 1:
-            return "", -1, result_prefix
+            return "", "", -1
 
         ## POS tagging & dependency parsing result
         words = doc.sentences[0].words
@@ -104,12 +152,18 @@ def generate_mapping():
         root = word_values[word_deprel.index('root')].lower()
         first = word_values[0].lower()
 
+        # non-semantic question param
         question_type = 0
         legal_head = ""
         legal_index = 0
         target_pasal = ""
         target_ayat = ""
         question_info = get_question_type_and_legal_head(root, first, verb)
+
+        # semantic question param
+        subject_label = ""
+        act_label = ""
+        alt_act = ""
         if question_info:
             question_type = question_info['q_type']
             legal_head = question_info['legal_head']
@@ -155,19 +209,54 @@ def generate_mapping():
                     question_type = 13
                     legal_index = word_deprel.index('nmod') if 'nmod' in word_deprel else 0
             else:
-                return '', -1, result_prefix
+                if root == "apa" and first == "apa" and verb != "":
+                    if verb[:2] == "di":
+                        act_label = convert_passive_to_active_verb(verb)
+                        alt_act = verb
+                        subject_rel = 'obl'
+                    else:
+                        act_label = verb
+                        subject_rel = 'obj'
+                    subject_index = word_deprel.index(subject_rel) if subject_rel in word_deprel else 0
+                    subject_label =  get_subject_label(
+                        subject_index, verb,
+                        word_head, word_values
+                    ) if subject_index != 0 else ''
+                elif root == "apa" and first == "apa" and verb == "":
+                    first_noun = word_values[text_pos.index("NOUN")] if 'NOUN' in  text_pos else ""
+                    if first_noun:
+                        act_label = first_noun
+                        print(word_deprel)
+                        subject_rel = ['flat', 'nmod', 'det', 'compound']
+                        for rel in subject_rel:
+                            if rel not in word_deprel:
+                                continue
+                            subject_index = word_deprel.index(rel, word_values.index(first_noun)+1)  
+                            subject_label =  get_subject_label(
+                                subject_index, first_noun,
+                                word_head, word_values
+                            ) if subject_index != 0 else ''
+                            if subject_label != '':
+                                break      
+                else:
+                    return '', "", -1
             
         legal_target = get_legal_target(legal_index, legal_head,
                                         word_head, text_pos, word_values) if legal_index != 0 else ''
         if legal_target != '':
             if target_pasal != '' and target_ayat != '':
-                return set_query(question_type, legal_title=legal_target,
-                                 pasal_num=target_pasal, ayat_num=target_ayat), question_type, result_prefix
+                return set_query(question_type, False, legal_title=legal_target,
+                                 pasal_num=target_pasal, ayat_num=target_ayat), '', question_type
             elif target_pasal != '':
-                return set_query(question_type, legal_title=legal_target,
-                                 pasal_num=target_pasal), question_type, result_prefix
-            return set_query(question_type, legal_title=legal_target), question_type, result_prefix
+                return set_query(question_type, False, legal_title=legal_target,
+                                 pasal_num=target_pasal), '', question_type
+            return set_query(question_type, False, legal_title=legal_target), '', question_type
         else:
-            return '', -1, result_prefix
+            if subject_label != "" and act_label != "" and alt_act != "":
+                return set_query(1, True, act_label=act_label, subject_label=subject_label),\
+                       set_query(1, True, act_label=alt_act, subject_label=subject_label), 1
+            elif subject_label != "" and act_label != "":
+                return set_query(1, True, act_label=act_label, subject_label=subject_label), '', 1
+            return '', '', -1
     
     return mapping

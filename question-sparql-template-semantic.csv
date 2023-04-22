@@ -1,0 +1,20 @@
+query_index,query_template
+1,"
+SELECT distinct ((replace(?lObject , ""Concept \\d+|Concept |\\W+$"" , """")) as ?answer)
+{
+  hint:Group hint:optimizer ""Runtime"" .
+  ?source lexid-s:hasRule ?norm .
+  ?norm lexid-s:hasAct ?act .
+  ?act lexid-s:hasSubject ?subject ;
+       lexid-s:hasActType ?actType ;
+       lexid-s:hasObject ?object .
+  ?subject rdfs:label ""Concept subject_label""^^xsd:string .
+  ?actType rdfs:label ""Concept act_label""^^xsd:string .
+  ?object lexid-s:hasElement ?objects .
+  OPTIONAL {?objects dct:description ?lObject }
+  OPTIONAL {
+    ?objects rdfs:label ?lObject .
+    FILTER REGEX(?lObject, ""^Concept"")
+  }
+}
+"
