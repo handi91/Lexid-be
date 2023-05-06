@@ -119,6 +119,15 @@ def generate_mapping():
                     pass
 
         return subject_label.strip()
+
+    def contains_year(string):
+        count = 0
+        for char in string:
+            if char.isdigit():
+                count += 1
+                if count == 4:
+                    return False
+        return True
         
     def mapping(text):
         # result_prefix = ""
@@ -209,35 +218,38 @@ def generate_mapping():
                     question_type = 13
                     legal_index = word_deprel.index('nmod') if 'nmod' in word_deprel else 0
             else:
-                if root == "apa" and first == "apa" and verb != "":
-                    if verb[:2] == "di":
-                        act_label = convert_passive_to_active_verb(verb)
-                        alt_act = verb
-                        subject_rel = 'obl'
+                if not contains_year(text): # if semantic content, question will not contain year
+                    if root == "apa" and first == "apa" and verb != "":
+                        if verb[:2] == "di":
+                            act_label = convert_passive_to_active_verb(verb)
+                            alt_act = verb
+                            subject_rel = 'obl'
+                        else:
+                            act_label = verb
+                            subject_rel = 'obj'
+                        subject_index = word_deprel.index(subject_rel) if subject_rel in word_deprel else 0
+                        subject_label =  get_subject_label(
+                            subject_index, verb,
+                            word_head, word_values
+                        ) if subject_index != 0 else ''
+                    elif root == "apa" and first == "apa" and verb == "":
+                        first_noun = word_values[text_pos.index("NOUN")] if 'NOUN' in  text_pos else ""
+                        if first_noun:
+                            act_label = first_noun
+                            print(word_deprel)
+                            subject_rel = ['flat', 'nmod', 'det', 'compound']
+                            for rel in subject_rel:
+                                if rel not in word_deprel:
+                                    continue
+                                subject_index = word_deprel.index(rel, word_values.index(first_noun)+1)  
+                                subject_label =  get_subject_label(
+                                    subject_index, first_noun,
+                                    word_head, word_values
+                                ) if subject_index != 0 else ''
+                                if subject_label != '':
+                                    break      
                     else:
-                        act_label = verb
-                        subject_rel = 'obj'
-                    subject_index = word_deprel.index(subject_rel) if subject_rel in word_deprel else 0
-                    subject_label =  get_subject_label(
-                        subject_index, verb,
-                        word_head, word_values
-                    ) if subject_index != 0 else ''
-                elif root == "apa" and first == "apa" and verb == "":
-                    first_noun = word_values[text_pos.index("NOUN")] if 'NOUN' in  text_pos else ""
-                    if first_noun:
-                        act_label = first_noun
-                        print(word_deprel)
-                        subject_rel = ['flat', 'nmod', 'det', 'compound']
-                        for rel in subject_rel:
-                            if rel not in word_deprel:
-                                continue
-                            subject_index = word_deprel.index(rel, word_values.index(first_noun)+1)  
-                            subject_label =  get_subject_label(
-                                subject_index, first_noun,
-                                word_head, word_values
-                            ) if subject_index != 0 else ''
-                            if subject_label != '':
-                                break      
+                        return '', "", -1
                 else:
                     return '', "", -1
             
