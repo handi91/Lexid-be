@@ -126,8 +126,8 @@ def generate_mapping():
             if char.isdigit():
                 count += 1
                 if count == 4:
-                    return False
-        return True
+                    return True
+        return False
         
     def mapping(text):
         # result_prefix = ""
