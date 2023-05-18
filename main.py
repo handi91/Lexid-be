@@ -45,7 +45,7 @@ async def get_suggestions(input: str, index: int, head: str, prev: str):
         "suggestions": suggestions
     }
 
-@app.post("/ask2")
+@app.post("/possible-answer")
 async def get_answer_v2(question: str):
     result = ""
     query, question, q_index= alternative_mapping(question)
@@ -59,7 +59,7 @@ async def get_answer_v2(question: str):
         "result": result 
     }
 
-@app.post("/ask")
+@app.post("/answer")
 async def get_answer(question: str):
     result = ""
     invalid = True
