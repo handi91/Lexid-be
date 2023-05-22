@@ -39,11 +39,9 @@ def generate_autocomplete_suggestion():
                 data_used = legal_type
             else:
                 data_used = ast.literal_eval(legal_number_year['nomor_tahun'][previous])
-                prefix = '?'
         elif autocomplete_index == 3:
             if q_head in pasal_and_ayat_question_head:
                 data_used = ast.literal_eval(legal_number_year['nomor_tahun'][previous])
-                prefix = '?'
             elif q_head in with_tail_question_head:
                 return with_tail_question_head[q_head]
         choice = rapidfuzz_process.extract(input_text, data_used, scorer=scorer_metric, limit=5)
