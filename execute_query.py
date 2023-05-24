@@ -27,7 +27,7 @@ def generate_get_query_result():
             result = sparql.queryAndConvert()
             answer = ";\n".join(ans['answer']['value'] for ans in result['results']['bindings'] if ans)
             if not answer:
-                answer = "Jawaban tidak ditemukan"
+                return "Jawaban tidak ditemukan"
             return answer if question_type not in [2, 3] else datetime.strptime(answer, "%Y-%m-%d").strftime("%d %B %Y")
         except:
             return "error"
